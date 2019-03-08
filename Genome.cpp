@@ -69,6 +69,41 @@ bool GenomeImpl::load(istream& genomeSource, vector<Genome>& genomes)
 	return true;
 }
 
+/*bool GenomeImpl::load(istream& genomeSource, vector<Genome>& genomes)
+{
+	char c;
+	string tempName, bases = "";
+	bool nameFirst = false;
+	genomes.clear(); // getting rid of whatever was originally in genomes
+	while (genomeSource.get(c))
+	{
+		if (c == '>')
+		{
+			if (bases.size() != 0)		//if there are bases, when c == > that means it is the end of the base sequence
+			{
+				genomes.push_back(Genome(tempName, bases));	//adding a new genome with correct name and dna sequence
+				tempName = "";	//reset values of name and bases sequence
+				bases = "";
+				nameFirst = false;	//sets the name first to false
+			}
+			getline(genomeSource, tempName);
+			if (tempName.size() == 1)	//if there was no name after the <
+				return false;
+			nameFirst = true;
+			continue;
+		}
+		if (toupper(c) != 'A' && toupper(c) != 'C' && toupper(c) != 'T' && toupper(c) != 'G' && toupper(c) != 'N')	//if it is an invalid base char
+			return false;
+		else
+			if (nameFirst && (toupper(c) == 'A' || toupper(c) == 'C' || toupper(c) == 'T' || toupper(c) == 'G' || toupper(c) == 'N'))
+			bases += toupper(c);
+	}
+	//if (nameFirst == true)		//if there were no base sequence after the names at the end
+		//return false;
+	return true;
+}
+*/
+
 int GenomeImpl::length() const
 {
 	return m_DNA.size();  
