@@ -28,7 +28,7 @@ private:
 	void cleanup(Node* root);
 	void newTrie();
 	void insertHelp(const std::string&key, const ValueType&value, Node*cur);
-	std::vector<ValueType> findExactMatch(const std::string&key, Node* cur) const;
+	std::vector<ValueType> findMatch(const std::string&key, Node* cur, bool exactMatchOnly, std::vector<ValueType> &temp, int firstChar) const;
 	Node* root;
 };
 
@@ -93,20 +93,30 @@ void Trie<ValueType>::insertHelp(const std::string&key, const ValueType& value, 
 template<typename ValueType>
 std::vector<ValueType> Trie<ValueType>::find(const std::string& key, bool exactMatchOnly)const
 {
-	if (exactMatchOnly)
-		return findExactMatch(key, root);
+	std::vector<ValueType> temp;
+	int charNum = 0;
+	return findMatch(key, root, exactMatchOnly, temp, charNum);
 }
 template<typename ValueType>
-std::vector<ValueType> Trie<ValueType>::findExactMatch(const std::string&key, Node* cur) const
+std::vector<ValueType> Trie<ValueType>::findMatch(const std::string&key, Node* cur, bool exactMatchOnly, std::vector<ValueType> &temp, int charNum) const
 {
 	if (key.size() == 0)
 	{
-		return cur->values;
+		for (int i = 0; i < cur->values.size(); i++)
+			temp.push_back(cur->values[i]);
 	}
+	charNum++;
 	for (int i = 0; i < (cur->children).size(); i++)
 	{
 		if (toupper(key[0]) == cur->children[i]->label)
-			return findExactMatch(key.substr(1), cur->children[i]);
-	}		
+		{
+			findMatch(key.substr(1), cur->children[i], exactMatchOnly, temp, charNum);
+		}
+		else if (!exactMatchOnly && charNum != 1)											//checking for SNiPs, means at this point there is one mismatch
+		{
+			findMatch(key.substr(1), cur->children[i], true, temp, charNum);		//calls findMatch to see if there is an exact match after the one mismatch
+		}
+	}
+	return temp;
 }
 #endif // TRIE_INCLUDED
