@@ -30,6 +30,13 @@ private:
 		Genome m_genome;
 		int pos;
 	};
+	struct reverseCmp
+	{
+		bool operator()(const int &a, const int &b)
+		{
+			return a > b;
+		}
+	};
 	vector<Genome> genomes;
 	Trie<Values> myValues;
 };
@@ -77,71 +84,55 @@ bool GenomeMatcherImpl::findGenomesWithThisDNA(const string& fragment, int minim
 	matches.clear();
 	string search = fragment.substr(0, m_minLength);
 	vector<Values> temp = myValues.find(search, exactMatchOnly);
-	//vector<DNAMatch> tempMatches;
-	if (fragment.size() > m_minLength)
-	{
+	int mismatch = 0;
 		for (int i = 0; i < temp.size(); i++)
-		{
-			int mismatch = 0;
+		{ 
+			mismatch = 0;
 			search = "";
 			(temp[i].m_genome).extract(temp[i].pos, fragment.size(), search);
 			int k;
-			for (k = 0; k < fragment.size(); k++)
+			for (k = 0; k < search.size(); k++)
 			{
-				if (fragment[k] != search[k] && mismatch == 0)
-					mismatch++;
-				else if (fragment[k] != search[k] && mismatch > 0)
-				{
-					break;
+				if (fragment[k] != search[k]) {
+					if (mismatch == 0 && !exactMatchOnly)
+						mismatch++;
+					else 
+						break;
 				}
 			}
 			DNAMatch add;
 			add.genomeName = temp[i].m_genome.name();
 			add.position = temp[i].pos;
-			if (k > m_minLength)
+			if (k >= m_minLength && k >=minimumLength)
+			{
 				add.length = k;
-			else
+				matches.push_back(add);
+			}
+			else if (m_minLength == minimumLength)
+			{
 				add.length = m_minLength;
-			matches.push_back(add);
-		}
-	}
-	for (int i = 0; i < matches.size(); i++)
-	{
-		for (vector<DNAMatch>::iterator it = matches.begin()+i+1; it != matches.end(); it++)
-		{
-			if (matches[i].genomeName == it->genomeName)
-			{
-				if (matches[i].length > it->length)
-				{
-					it = matches.erase(it);
-					it--;
-				}
-				else if (matches[i].position < it->position)
-				{
-					it = matches.erase(it);
-					it--;
-				}
-			}
-		}		 
-	}
-	for (int i = 0; i < matches.size(); i++)
-	{
-		for (vector<DNAMatch>::iterator it = matches.begin() + i + 1; it != matches.end(); it++)
-		{
-			if (matches[i].genomeName == it->genomeName)
-			{
-				if (matches[i].length > it->length)
-				{
-					it = matches.erase(it);
-					it--;
-				}
-				else if (matches[i].position < it->position)
-				{
-					it = matches.erase(it);
-					it--;
-				}
+				matches.push_back(add);
 			}
 		}
+	map<string, DNAMatch> myMap;
+	map<string, DNAMatch>::iterator it;
+	for (int i = 0; i < matches.size(); i++)
+	{
+		it = myMap.find(matches[i].genomeName);
+		if (it != myMap.end())
+		{
+			if(myMap[matches[i].genomeName].length < matches[i].length)
+				myMap[matches[i].genomeName] = matches[i];
+			else if(myMap[matches[i].genomeName].position > matches[i].position)
+				myMap[matches[i].genomeName] = matches[i];
+		}
+		else
+			myMap.insert(pair<string, DNAMatch>(matches[i].genomeName, matches[i]));
+	}
+	matches.clear();
+	for (it = myMap.begin(); it != myMap.end(); it++)
+	{
+		matches.push_back(it->second);
 	}
 	if(matches.size()== 0)
 		return false;
@@ -150,7 +141,42 @@ bool GenomeMatcherImpl::findGenomesWithThisDNA(const string& fragment, int minim
 
 bool GenomeMatcherImpl::findRelatedGenomes(const Genome& query, int fragmentMatchLength, bool exactMatchOnly, double matchPercentThreshold, vector<GenomeMatch>& results) const
 {
-	return false;  // This compiles, but may not be correct
+	cout << "called" << endl;
+	if(fragmentMatchLength < m_minLength)
+		return false;
+	map<string, double> matchCount;
+	multimap<double, GenomeMatch, reverseCmp> ordered;
+	int numSub = query.length() / fragmentMatchLength;
+	for (int i = 0; i < numSub; i++)
+	{
+		string temp;
+		query.extract(i*fragmentMatchLength, fragmentMatchLength,temp);
+		vector<DNAMatch> matches;
+		if (findGenomesWithThisDNA(temp, temp.size(), exactMatchOnly, matches))
+		{
+			for (int j = 0; j < matches.size(); j++)
+			{
+				if (matchCount.find(matches[j].genomeName) != matchCount.end())
+					matchCount[matches[j].genomeName] ++;
+				else
+					matchCount.insert(pair<string,double>(matches[j].genomeName, 1));
+			}
+		}
+	}
+	for (map<string, double>::iterator it = matchCount.begin(); it != matchCount.end(); it++)
+	{
+		GenomeMatch a;
+		a.genomeName = it->first;
+		a.percentMatch = (it->second*100.0)/(double)numSub;
+		ordered.insert(pair<double, GenomeMatch>(a.percentMatch, a));
+	}
+	for (multimap<double, GenomeMatch, reverseCmp>::iterator it = ordered.begin(); it != ordered.end(); it++)
+	{
+		results.push_back(it->second);
+	}
+	if (results.size() == 0)
+		return false;
+	return true;
 }
 
 //******************** GenomeMatcher functions ********************************

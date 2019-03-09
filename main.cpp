@@ -10,18 +10,27 @@ using namespace std;
 
 int main()
 {
-	Genome a("john", "ACCGTTA");
-	GenomeMatcher b(3);
-	b.addGenome(a);
-	vector<DNAMatch> matches;
-	cout << b.findGenomesWithThisDNA("CATGG", 4,false,matches);
+	//Genome a("john", "ACCGTTA");
+	Genome a("1", "CGGTGTACNACGACTGGGGATAGAATATCTTGACGTCGTACCGGTTGTAGTCGTTCGACCGAAGGGTTCCGCGCCAGTAC");
+	Genome b("2", "TAACAGAGCGGTNATATTGTTACGAATCACGTGCGAGACTTAGAGCCAGAATATGAAGTAGTGATTCAGCAACCAAGCGG");
+	Genome c("3", "TTTTGAGCCAGCGACGCGGCTTGCTTAACGAAGCGGAAGAGTAGGTTGGACACATTNGGCGGCACAGCGCTTTTGAGCCA");
+	Genome querey("que", "TTTTGAGCCAGCGACGCGGCTTGCTTAACGAAGCGGAAGAGTAGGTTGGACACATTNGGCGGCACAGCGCTTTTGAGCCA");
+	GenomeMatcher e(3);
+	e.addGenome(a);
+	e.addGenome(b);
+	e.addGenome(c);
+	//e.addGenome(querey);
+	vector<GenomeMatch> matches;
+	bool result;	result = e.findRelatedGenomes(querey, 7, false, 10, matches);
+	cout << "result was: " << result << endl;
 	for (int i = 0; i < matches.size(); i++)
 	{
-		cout << "This is the DNA length: " << matches[i].length << endl;
 		cout << "This is the DNA name: " << matches[i].genomeName << endl;
-		cout << "This is the DNA pos: " << matches[i].position << endl;
+		cout << "This is the %: " << matches[i].percentMatch << endl;
+		//cout << "This is the DNA length: " << matches[i].length << endl;
+		//cout << "This is the DNA pos: " << matches[i].position << endl << endl;
 	}
-
+	
 
 	/*
 	string filename = "C:/Users/marie/Desktop/CS32/Gee-nomics/data/tester.txt";

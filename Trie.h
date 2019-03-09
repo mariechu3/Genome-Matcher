@@ -73,6 +73,7 @@ void Trie<ValueType>::insert(const std::string&key, const ValueType& value)
 	insertHelp(key, value, root);
 }
 template<typename ValueType>
+//helper function for insert
 void Trie<ValueType>::insertHelp(const std::string&key, const ValueType& value, Node* cur)
 {
 	if (key.size() == 0)
@@ -98,12 +99,13 @@ std::vector<ValueType> Trie<ValueType>::find(const std::string& key, bool exactM
 	return findMatch(key, root, exactMatchOnly, temp, charNum);
 }
 template<typename ValueType>
+//helper function for find
 std::vector<ValueType> Trie<ValueType>::findMatch(const std::string&key, Node* cur, bool exactMatchOnly, std::vector<ValueType> &temp, int charNum) const
 {
 	if (key.size() == 0)
 	{
 		for (int i = 0; i < cur->values.size(); i++)
-			temp.push_back(cur->values[i]);
+			temp.push_back(cur->values[i]);			//match found so values in teh vector are pushed onto the result vector
 	}
 	charNum++;
 	for (int i = 0; i < (cur->children).size(); i++)
@@ -112,8 +114,8 @@ std::vector<ValueType> Trie<ValueType>::findMatch(const std::string&key, Node* c
 		{
 			findMatch(key.substr(1), cur->children[i], exactMatchOnly, temp, charNum);
 		}
-		else if (!exactMatchOnly && charNum != 1)											//checking for SNiPs, means at this point there is one mismatch
-		{
+		else if (!exactMatchOnly && charNum != 1)											//checking for SNiPs, means at this point there is one mismatch, 																	
+		{																					//checks to make sure mismatch is not first character
 			findMatch(key.substr(1), cur->children[i], true, temp, charNum);		//calls findMatch to see if there is an exact match after the one mismatch
 		}
 	}
