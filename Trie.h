@@ -48,7 +48,6 @@ template<typename ValueType>
 Trie<ValueType>::~Trie()
 {
 	cleanup(root);
-	std::cout << "cleaned up " << std::endl;
 }
 template<typename ValueType>
 void Trie<ValueType>::cleanup(Node* root)
@@ -57,7 +56,7 @@ void Trie<ValueType>::cleanup(Node* root)
 		return;
 	for (int i = 0; i < (root->children).size(); i++)
 	{
-		cleanup(root->children[i]);
+		cleanup(root->children[i]);		//recursively call cleanup until all dynamically created nodes are deleted
 	}
 	delete root;
 }
@@ -76,20 +75,20 @@ template<typename ValueType>
 //helper function for insert
 void Trie<ValueType>::insertHelp(const std::string&key, const ValueType& value, Node* cur)
 {
-	if (key.size() == 0)
+	if (key.size() == 0)		//if there are no more letters/path to add
 	{
-		cur->values.push_back(value);
+		cur->values.push_back(value);	//push the values into the ValueType vector of the node
 		return;
 	}
 	for (int i = 0; i < (cur->children).size(); i++)
 	{
-		if (toupper(key[0]) == cur->children[i]->label)
+		if (toupper(key[0]) == cur->children[i]->label)				//if the key is equal to one of the child's labels, traverse into that child
 			return insertHelp(key.substr(1), value, cur->children[i]);
 	}
 	Node* newChild = new Node;
 	newChild->label = toupper(key[0]);
 	cur->children.push_back(newChild);
-	insertHelp(key.substr(1), value, cur->children[(cur->children).size() - 1]);
+	insertHelp(key.substr(1), value, newChild);
 }
 template<typename ValueType>
 std::vector<ValueType> Trie<ValueType>::find(const std::string& key, bool exactMatchOnly)const
@@ -105,7 +104,7 @@ std::vector<ValueType> Trie<ValueType>::findMatch(const std::string&key, Node* c
 	if (key.size() == 0)
 	{
 		for (int i = 0; i < cur->values.size(); i++)
-			temp.push_back(cur->values[i]);			//match found so values in teh vector are pushed onto the result vector
+			temp.push_back(cur->values[i]);			//match found so values in the vector are pushed onto the result vector
 	}
 	charNum++;
 	for (int i = 0; i < (cur->children).size(); i++)

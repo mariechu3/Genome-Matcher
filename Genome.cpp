@@ -26,7 +26,6 @@ bool GenomeImpl::load(istream& genomeSource, vector<Genome>& genomes)
 {
 	string temp, tempBase, tempName, bases = "";
 	bool valid = false;
-	bool lastLine = false;
 	genomes.clear();	// getting rid of whatever was originally in genomes
 	while (getline(genomeSource, temp))
 	{
@@ -58,7 +57,6 @@ bool GenomeImpl::load(istream& genomeSource, vector<Genome>& genomes)
 				valid = true;		//base exists after a name
 			}
 		}		
-		cout << temp <<endl;
 	}
 	if (bases.size() != 0 && tempName.size() != 0)		//this will add the last genome onto the vector
 	{
